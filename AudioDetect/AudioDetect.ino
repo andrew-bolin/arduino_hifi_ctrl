@@ -80,8 +80,8 @@ void loop()
       if(tAmpOff > 0)
       {
         tAmpOff -= 1;
-        Serial.println("Time remaining before shutdown:");
-        Serial.println(tAmpOff);
+        //Serial.println("Time remaining before shutdown:");
+        //Serial.println(tAmpOff);
       }
       else
       { // time to turn off
