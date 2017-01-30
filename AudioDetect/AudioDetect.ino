@@ -7,14 +7,14 @@ const int OFF_DELAY_SEC = 180; // seconds to wait before turning amp off
 const int LOOP_DELAY = 100; // ms between samples
 
 const int OFF_DELAY = OFF_DELAY_SEC * (1000/LOOP_DELAY); 
-int tAmpOff = OFF_DELAY;
+int barometer = 0;
 bool ampOn = false;
 
 // the setup routine runs once when you press reset:
 void setup() {
   // initialize serial communication at 9600 bits per second:
   //Serial.begin(9600);
-  tAmpOff = OFF_DELAY; 
+  barometer = OFF_DELAY; 
   ampOn = false;
   pinMode(CTRL_PIN, OUTPUT);
 }
@@ -59,35 +59,42 @@ void loop()
   
   if((a0Value>10) or (a1Value>10))
   { // audio found
-    tAmpOff = OFF_DELAY;
+    barometer += 20;
     /*
     Serial.println("I found an audio! ampOn=");
     Serial.println(ampOn);
-    Serial.println("tAmpOff=");
-    Serial.println(tAmpOff);
+    Serial.println("barometer=");
+    Serial.println(barometer);
     Serial.println("OFF_DELAY=");
     Serial.println(OFF_DELAY); //*/
-    if(false == ampOn)
+    if((barometer>=100) and (false == ampOn))
     {
       txRC5(CA_RC5_SYS, CA_CMD_AMPON);
       ampOn = true;
+      barometer = OFF_DELAY;
+    }
+    
+    if(barometer>OFF_DELAY)
+    {
+      barometer = OFF_DELAY;
     }
   }
   else 
   { // no audio found
-    if(ampOn)
+    if(barometer > 0)
     {
-      if(tAmpOff > 0)
-      {
-        tAmpOff -= 1;
-        //Serial.println("Time remaining before shutdown:");
-        //Serial.println(tAmpOff);
-      }
-      else
+      barometer -= 1;
+      //Serial.println("Time remaining before shutdown:");
+      //Serial.println(barometer);
+    }
+    else
+    {
+      if(ampOn)    
       { // time to turn off
         txRC5(CA_RC5_SYS, CA_CMD_AMPOFF);
         ampOn = false;
       }
+      barometer = 0; // just in case it somehow becomes -ve
     }
   }
   
